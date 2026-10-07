@@ -1,7 +1,6 @@
-# linkedin-scraper-node
+[![使用 LinkedIn 爬虫 API 抓取领英数据：个人资料、公司、职位和帖子。可按 URL、姓名或关键词采集或发现数据。免费开始使用。](.github/banner.png)](https://www.bright.cn/products/web-scraper/linkedin?utm_source=github)
 
-[![运行状态检查](https://github.com/bright-cn/linkedin-scraper-node/actions/workflows/live.yml/badge.svg)](https://github.com/bright-cn/linkedin-scraper-node/actions/workflows/live.yml)
-[![最近验证时间](https://img.shields.io/badge/last%20verified-6%20Oct%202026-brightgreen)](https://github.com/bright-cn/linkedin-scraper-node/actions/workflows/live.yml) <!-- verified: rewritten by the daily run -->
+# linkedin-scraper-node
 
 [快速开始](#快速开始) · [命令行使用](#作为命令运行) · [API 接口](#其他-api-接口) · [数据](#数据) · [错误处理](#出错时) · [编程智能体](#编程智能体) · [文档](https://docs.brightdata.com/products/scrapers/linkedin/introduction) · [支持](#支持)
 
