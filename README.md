@@ -1,47 +1,32 @@
-[![Scrape LinkedIn data with the LinkedIn Scraper API: profiles, companies, jobs, posts. Collect or discover by URL, name and keyword. Start free.](.github/banner.png)](https://brightdata.com/products/web-scraper/linkedin?utm_source=github)
-
 # linkedin-scraper-node
 
-[![Live check](https://github.com/brightdata/linkedin-scraper-node/actions/workflows/live.yml/badge.svg)](https://github.com/brightdata/linkedin-scraper-node/actions/workflows/live.yml)
-[![last verified](https://img.shields.io/badge/last%20verified-6%20Oct%202026-brightgreen)](https://github.com/brightdata/linkedin-scraper-node/actions/workflows/live.yml) <!-- verified: rewritten by the daily run -->
+[![运行状态检查](https://github.com/bright-cn/linkedin-scraper-node/actions/workflows/live.yml/badge.svg)](https://github.com/bright-cn/linkedin-scraper-node/actions/workflows/live.yml)
+[![最近验证时间](https://img.shields.io/badge/last%20verified-6%20Oct%202026-brightgreen)](https://github.com/bright-cn/linkedin-scraper-node/actions/workflows/live.yml) <!-- verified: rewritten by the daily run -->
 
-[Quickstart](#quickstart) · [Command](#or-run-it-as-a-command) · [Endpoints](#the-rest-of-the-api) · [Data](#the-data) · [Errors](#when-it-fails) · [Coding agents](#coding-agents) · [Docs](https://docs.brightdata.com/products/scrapers/linkedin/introduction) · [Support](#support)
+[快速开始](#快速开始) · [命令行使用](#作为命令运行) · [API 接口](#其他-api-接口) · [数据](#数据) · [错误处理](#出错时) · [编程智能体](#编程智能体) · [文档](https://docs.brightdata.com/products/scrapers/linkedin/introduction) · [支持](#支持)
 
-LinkedIn profiles, companies, jobs and posts as JSON, in JavaScript. No LinkedIn
-login, no browser. Built on the
-[Bright Data LinkedIn Scraper API](https://brightdata.com/products/web-scraper/linkedin?utm_source=github).
+使用 JavaScript 将领英个人资料、公司、职位和帖子获取为 JSON。无需登录领英，也无需浏览器。基于 [Bright Data LinkedIn 爬虫 API](https://www.bright.cn/products/web-scraper/linkedin?utm_source=github) 构建。
 
-Uses the [Bright Data JavaScript SDK](https://github.com/brightdata/sdk-js).
-Full API docs:
-[LinkedIn Scraper API](https://docs.brightdata.com/products/scrapers/linkedin/introduction).
+本项目使用 [Bright Data JavaScript SDK](https://github.com/bright-cn/sdk-js)。完整 API 文档：[LinkedIn 爬虫 API](https://docs.brightdata.com/products/scrapers/linkedin/introduction)。
 
-Also here: a one-command CLI for profiles, and the
-[Bright Data CLI](#coding-agents), which needs no JavaScript at all.
+本仓库还提供用于获取个人资料的单命令 CLI，以及完全无需编写 JavaScript 的 [Bright Data CLI](#编程智能体)。
 
-LinkedIn profile data is personal data. Use it within the law that applies to
-you: [Bright Data compliance](https://brightdata.com/legal-governance).
+领英个人资料数据属于个人数据。请遵守适用于你的法律使用这些数据：[Bright Data 合规信息](https://www.bright.cn/legal-governance)。
 
-## Quickstart
+## 快速开始
 
-Node 20 or newer. This package is ESM, so use `import`, not `require`.
+需要 Node 20 或更新版本。这个包使用 ESM，因此请使用 `import`，不要使用 `require`。
 
 ```bash
 npm install @brightdata/sdk
 export BRIGHTDATA_API_TOKEN=YOUR_API_KEY
 ```
 
-Get a token from the
-[Bright Data control panel](https://brightdata.com/cp/setting/users). This SDK
-does not read a `.env` file; Node loads one for it with
-`node --env-file=.env yourscript.mjs`.
+从 [Bright Data 控制面板](https://www.bright.cn/cp/setting/users)获取令牌。此 SDK 不会自行读取 `.env` 文件；可以让 Node 通过 `node --env-file=.env yourscript.mjs` 加载。
 
-Or skip the token. Run `npx -p @brightdata/cli bdata login` once: it opens a
-browser, and from then on the SDK finds the stored credentials on its own, for
-you and for any coding agent working in that terminal. Agents cannot click
-through the login, so do it yourself first.
+也可以不手动设置令牌。先运行一次 `npx -p @brightdata/cli bdata login`：它会打开浏览器。此后，SDK 会自行找到已保存的凭据，供你以及在该终端工作的任何编程智能体使用。智能体无法自行完成浏览器中的登录操作，因此请先亲自登录。
 
-No account yet? [Create one](https://brightdata.com/cp/start); new accounts get
-[5,000 free credits a month](https://docs.brightdata.com/general/account/billing-and-pricing/free-tier).
+还没有账户？[创建账户](https://www.bright.cn/cp/start)；新账户每月可获得 [5,000 免费积分](https://docs.brightdata.com/general/account/billing-and-pricing/free-tier)。
 
 ```javascript
 import { bdclient } from "@brightdata/sdk";
@@ -59,40 +44,33 @@ console.log(profile.followers, "followers,", profile.connections, "connections")
 await client.close();
 ```
 
-```
+```text
 Satya Nadella | Chairman and CEO at Microsoft
 12172205 followers, 500 connections
 ```
 
-Expect one to three minutes: the API runs a job and `toResult` waits for it.
-One [credit](https://brightdata.com/pricing/web-scraper) per profile.
+预计需要一至三分钟：API 会运行一个任务，`toResult` 则会等待任务完成。每份个人资料消耗 [1 个积分](https://www.bright.cn/pricing/web-scraper)。
 
-Three things in that snippet are not optional.
+上面的代码片段中，以下设置都不可省略。
 
-`autoCreateZones: false` stops the SDK creating zones on startup. The zones are
-for Web Unlocker and SERP, two other Bright Data products this scraper never
-touches. Creating one fails on accounts without a payment method.
+`autoCreateZones: false` 会阻止 SDK 在启动时创建区域。这些区域用于网络解锁器和搜索引擎 API，是此爬虫工具不会用到的另外两款 Bright Data 产品。如果账户未添加付款方式，创建区域会失败。
 
-`includeErrors: true` makes the API report a dead profile as a row. Without it
-the row is dropped and you get nothing.
+`includeErrors: true` 会让 API 把无效的个人资料作为一行结果返回。不设置它，这一行会被丢弃，你将收不到对应结果。
 
-`async: true` is what makes `collectProfiles` hand back a job rather than going
-through the synchronous endpoint, which gives up after a minute.
+`async: true` 会让 `collectProfiles` 返回任务，而不是使用一分钟后就会放弃的同步接口。
 
-`pollTimeout` is milliseconds, not seconds. A number copied from a Python
-example expires before the first status check.
+`pollTimeout` 的单位是毫秒，不是秒。如果直接复制 Python 示例中的数字，可能还没进行第一次状态检查就已超时。
 
-## Or run it as a command
+## 作为命令运行
 
-The command in this repo does the same for several profiles and writes one
-JSON file.
+此仓库中的命令可以一次处理多份个人资料，并写入一个 JSON 文件。
 
 ```bash
-npm install -g github:brightdata/linkedin-scraper-node
+npm install -g github:bright-cn/linkedin-scraper-node
 linkedin-scraper satyanadella reidhoffman
 ```
 
-```
+```text
 Fetching 2 LinkedIn profiles: satyanadella, reidhoffman
 One job for all of them, usually one to three minutes. One credit per profile.
 asking  2 profiles...
@@ -102,28 +80,21 @@ got     reidhoffman: 38 fields (Reid Hoffman)
 Saved 2 of 2 profiles as JSON to linkedin.json
 ```
 
-It takes a profile URL just as happily as the slug inside it, so
-`linkedin-scraper https://www.linkedin.com/in/satyanadella/` does the same
-thing.
+命令既接受个人资料 URL，也接受其中的路径标识。因此，`linkedin-scraper https://www.linkedin.com/in/satyanadella/` 的效果相同。
 
-In a terminal the `asking` line is replaced by this, updating in place, so you
-can see it is working and how long it has been going:
+在终端中，`asking` 那一行会被下面的进度显示替换，并原地更新，让你知道任务仍在运行以及已经运行了多久：
 
-```
+```text
 ⠹ 2 profiles 0:01:12
 ```
 
-```
+```text
 --out PATH   output file, default linkedin.json
 ```
 
-Every profile you ask for goes into one job. The API bills per record, not per
-job, and a job takes one to three minutes whether it carries one URL or ten, so
-ten profiles cost the same wait as one.
+请求的所有个人资料都放在同一个任务中。API 按记录而不是按任务计费；无论任务包含一个 URL 还是十个 URL，通常都需要一至三分钟。因此，获取十份个人资料和获取一份个人资料需要等待的时间大致相同。
 
-Import it instead of running it, for `ok` and `error` per profile instead of raw
-rows. `scrape` never rejects for one bad profile; check `ok` before reading
-`profile`:
+也可以导入它，而不是将它作为命令运行。这样，每份个人资料都会得到 `ok` 和 `error` 状态，而不只是原始数据行。单份个人资料失败不会使 `scrape` 拒绝整个请求；读取 `profile` 前请先检查 `ok`：
 
 ```javascript
 import { scrape } from "@brightdata/linkedin-scraper-node";
@@ -137,56 +108,39 @@ for (const outcome of await scrape(["satyanadella", "zz-not-a-real-profile-zz"])
 }
 ```
 
-```
+```text
 satyanadella: Satya Nadella
 zz-not-a-real-profile-zz failed: The profile is hidden or private.
 ```
 
-## The rest of the API
+## 其他 API 接口
 
-The command covers the first row of the table below. The rest of the SDK's
-LinkedIn surface is the other rows, documented in the
-[LinkedIn Scraper API docs](https://docs.brightdata.com/products/scrapers/linkedin/introduction).
-Every snippet below is complete and needs only `@brightdata/sdk`: paste it as
-is. Every one of them runs in Actions each Monday, a smaller check runs every
-other day, and the badge at the top is the latest result.
+上面的命令对应下表第一行。其余各行是 SDK 提供的其他领英接口，详见 [LinkedIn 爬虫 API 文档](https://docs.brightdata.com/products/scrapers/linkedin/introduction)。下面的每段代码都是完整示例，只需要 `@brightdata/sdk`，可直接粘贴运行。所有示例每周一都会在 Actions 中运行，其他日子还会执行规模较小的检查。页面顶部的徽章显示最近一次结果。
 
-| you have | want | call |
+| 已有信息 | 想获取 | 调用方式 |
 | --- | --- | --- |
-| a profile URL | that profile | `collectProfiles([url], { async: true, includeErrors: true })` |
-| a first and last name | matching profiles | `discoverProfiles([{ first_name, last_name }], …)`, see the note below |
-| a company URL | that company | `collectCompanies([url], { async: true, includeErrors: true })` |
-| a job URL | that job posting | `collectJobs([url], { async: true, includeErrors: true })` |
-| a keyword and a location | matching job postings | `discoverJobs([{ location, keyword }], …)` |
-| a post URL | that post | `collectPosts([url], { async: true, includeErrors: true })` |
-| a profile URL | that person's posts | `discoverUserPosts([{ url }], …)` |
-| a company URL | that company's posts | `discoverCompanyPosts([{ url }], …)` |
+| 个人资料 URL | 对应个人资料 | `collectProfiles([url], { async: true, includeErrors: true })` |
+| 名和姓 | 匹配的个人资料 | `discoverProfiles([{ first_name, last_name }], …)`；见下文说明 |
+| 公司 URL | 对应公司 | `collectCompanies([url], { async: true, includeErrors: true })` |
+| 职位 URL | 对应职位信息 | `collectJobs([url], { async: true, includeErrors: true })` |
+| 关键词和地点 | 匹配的职位信息 | `discoverJobs([{ location, keyword }], …)` |
+| 帖子 URL | 对应帖子 | `collectPosts([url], { async: true, includeErrors: true })` |
+| 个人资料 URL | 此人发布的帖子 | `discoverUserPosts([{ url }], …)` |
+| 公司 URL | 该公司发布的帖子 | `discoverCompanyPosts([{ url }], …)` |
 
-All of them hang off `client.scrape.linkedin`.
+这些方法都位于 `client.scrape.linkedin` 下。
 
-`discoverProfiles` takes `{ first_name, last_name }`, not a URL. It is people
-search by name. This README documents that it exists and does not demonstrate
-it against a real person.
+`discoverProfiles` 接受 `{ first_name, last_name }`，而不是 URL。它按姓名搜索人员。本 README 只说明此功能的存在，不会以真实人物演示。
 
-There is no example here built on a pinned job URL. A posting closes, and a
-snippet pinned to it would turn red the week that happened. Discover jobs by
-keyword and location instead, as the table shows.
+这里也没有使用固定职位 URL 的示例。职位可能停止招聘；如果示例固定引用该职位，它关闭的那一周，检查结果就会变红。请按表中所示，改用关键词和地点发现职位。
 
-Every one of these is an asynchronous job. The API triggers it, the SDK polls,
-and the call returns when it is ready. That is why a call takes one to three
-minutes. The API's
-[synchronous endpoint](https://docs.brightdata.com/api-reference/scrapers/synchronous-requests),
-20 URLs and a one-minute limit, is raw HTTP only.
+上述调用都会创建异步任务：API 触发任务，SDK 轮询状态，并在任务就绪后返回。这就是一次调用需要一至三分钟的原因。API 的[同步接口](https://docs.brightdata.com/api-reference/scrapers/synchronous-requests)仅供直接通过 HTTP 调用，最多接受 20 个 URL，且有一分钟的时间限制。
 
-The four short names, `profiles`, `companies`, `jobs` and `posts`, trigger, poll
-and fetch in one call and hand back a `ScrapeResult`. The `collect` and
-`discover` names hand back a `ScrapeJob` you poll yourself. Only that second
-group can pass `includeErrors`. A run that must tell a dead profile from an
-empty one uses it.
+`profiles`、`companies`、`jobs` 和 `posts` 这四个简短方法名会在一次调用中完成触发、轮询和获取，并返回 `ScrapeResult`。名称以 `collect` 或 `discover` 开头的方法会返回需要自行轮询的 `ScrapeJob`。只有后一组方法可以传入 `includeErrors`。如果需要区分无效个人资料与空结果，请使用后一组方法并传入该参数。
 
-### Several profiles, one job
+### 多份个人资料，一个任务
 
-An array of URLs is one job, not one per profile.
+一个 URL 数组只会创建一个任务，不会为每份个人资料各建一个任务。
 
 ```javascript
 import { bdclient } from "@brightdata/sdk";
@@ -207,19 +161,16 @@ for (const profile of result.data) {
 await client.close();
 ```
 
-```
+```text
 Reid Hoffman | United States | 2792708 followers
 Satya Nadella | Redmond, Washington, United States | 12172206 followers
 ```
 
-Rows come back in no guaranteed order. Match them to what you asked for with
-`input_url`, not by position.
+返回结果的顺序不作保证。请用 `input_url` 匹配请求的个人资料，不要依赖行的位置。
 
-### Trigger now, fetch later
+### 现在触发，稍后获取
 
-For anything bigger than a few profiles, do not block a process for an hour.
-Trigger, keep the snapshot id, fetch when ready. Snapshots stay downloadable
-for 30 days.
+如果要处理的不止几份个人资料，不要让进程阻塞一小时。先触发任务并保存快照 ID，待任务就绪后再获取结果。快照可在 30 天内下载。
 
 ```javascript
 import { bdclient } from "@brightdata/sdk";
@@ -237,16 +188,15 @@ console.log("fetched:", record.name, "|", record.current_company_name);
 await client.close();
 ```
 
-```
+```text
 snapshot: sd_mu52fz8odk79uf5we
 status: ready
 fetched: Satya Nadella | Microsoft
 ```
 
-A `ScrapeJob` also has `download()` to write the snapshot to disk and `cancel()`
-to stop it.
+`ScrapeJob` 还提供 `download()` 方法，可将快照写入磁盘；也提供 `cancel()` 方法，用于停止任务。
 
-### A company
+### 获取公司数据
 
 ```javascript
 import { bdclient } from "@brightdata/sdk";
@@ -263,14 +213,13 @@ console.log(company.name, "|", company.employees_in_linkedin, "employees on Link
 await client.close();
 ```
 
-```
+```text
 Bright Data | 407 employees on LinkedIn
 ```
 
-### Jobs by keyword and location
+### 按关键词和地点发现职位
 
-`location` is required. `keyword`, `company`, `time_range`, `job_type`,
-`experience_level` and `remote` are optional.
+`location` 是必填项。`keyword`、`company`、`time_range`、`job_type`、`experience_level` 和 `remote` 是可选项。
 
 ```javascript
 import { bdclient } from "@brightdata/sdk";
@@ -288,101 +237,89 @@ for (const posting of result.data.slice(0, 3)) {
 await client.close();
 ```
 
-```
+```text
 Data Engineer | FDJ UNITED | London Area, United Kingdom
 Senior Data Engineer | Firstup | London, England, United Kingdom
 Data Engineer | General Atlantic | London Area, United Kingdom
 ```
 
-Job discovery bills one credit per row, and a broad filter matches thousands of
-postings. `limitPerInput` caps it. The call above returned exactly 5.
+职位发现功能按行计费，每行消耗 1 个积分；宽泛的筛选条件可能匹配数千条职位信息。`limitPerInput` 可限制返回数量。上面的调用实际返回了 5 条。
 
-Pass `async: true` alongside it. Without that key the option is stripped before
-the request, with no error, and the job runs uncapped
-([sdk-js#36](https://github.com/brightdata/sdk-js/issues/36)). The SDK's
-`DiscoverOptions` type says to omit `async`, so the typed call is the one that
-costs you.
+请同时传入 `async: true`。如果缺少它，`limitPerInput` 会在请求发送前被移除，且不会报错，导致任务不受数量上限约束（[sdk-js#36](https://github.com/bright-cn/sdk-js/issues/36)）。SDK 的 `DiscoverOptions` 类型却提示省略 `async`，因此符合其类型定义的调用反而可能产生更多费用。
 
-## The data
+## 数据
 
-The fields most people want from a profile:
+大多数人关心的个人资料字段：
 
-```
+```text
 name  position  city  current_company_name  followers  connections  experience
 ```
 
-The code hardcodes no field list. Whatever the API returns lands in
-`result.data`, and in the command's file.
+代码没有硬编码字段列表。API 返回的所有字段都会进入 `result.data`，也会写入命令生成的文件。
 
-The API marks 8 of these fields as personal data, with `pii: true` in the
-schema: `id`, `name`, `about`, `url`, `input_url`, `linkedin_id`, `first_name`
-and `last_name`. Read that flag rather than keeping your own list.
+API 在数据结构中以 `pii: true` 将其中 8 个字段标记为个人数据：`id`、`name`、`about`、`url`、`input_url`、`linkedin_id`、`first_name` 和 `last_name`。请读取该标记，而不是自行维护字段列表。
 
 <!-- fields:start -->
 <details>
-<summary>All 47 fields, with type and description</summary>
+<summary>全部 47 个字段及其类型和说明</summary>
 
-Regenerated every day from the dataset schema, via
-`client.datasets.linkedinProfiles.getMetadata()`, so it cannot go stale. A
-profile carries the fields that apply to it: the sample file has 32
-of these 47, plus `timestamp` and `input`,
-which the schema does not list.
+以下内容每天都会通过 `client.datasets.linkedinProfiles.getMetadata()` 从数据集的数据结构重新生成，因此不会过时。每份个人资料只包含适用于它的字段：示例文件包含这 47 个字段中的 32 个，另有数据结构未列出的 `timestamp` 和 `input`。
 
-| field | type | description |
+| 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `id` | text | Personal data. A unique identifier for the person's LinkedIn profile |
-| `name` | text | Personal data. Profile name |
-| `city` | text | Geographical location of the user |
-| `country_code` | text | Geographical location of the user |
-| `position` | text | The current job title or position of the profile |
-| `about` | text | Personal data. A concise profile summary. In some cases, only a truncated version with "…" is displayed on the website, and this is the version we capture |
-| `posts` | array | Contains information related to the user's last LinkedIn posts. It typically includes the post title, created date, URL link to the post, etc. |
-| `groups` | array | The LinkedIn groups that the profile is a part of |
-| `current_company` | object | Provides information about the user's current professional position. It typically includes the company name, the user's job title, the company ID, and the industry or sector to which the company belongs |
-| `experience` | array | Contains information about user's professional history. It typically includes the user's job title, length of time the user held the position, the geographic location of the company, the start and end date, the company name, URL link to the company profile, etc. |
-| `url` | url | Personal data. URL that link directly to the LinkedIn profile |
-| `people_also_viewed` | array | Provides a list of LinkedIn profiles that users who have viewed the user's profile, have viewed these as well |
-| `educations_details` | text | Provides information about the user's educational background |
-| `education` | array | Provides information about the user's educational background. It typically includes the degree, the start and end year, the filed, etc. |
-| `recommendations_count` | number | A numeric count of the total number of recommendations that the user has received |
-| `avatar` | url | URL that link to the profile picture of the LinkedIn user |
-| `courses` | array | Contains information about courses or educational programs that the user has undertaken |
-| `languages` | array | Contains information about the user's proficiency in different languages |
-| `certifications` | array | Licenses & Certifications |
-| `recommendations` | array | Recommendations that the user has received from their connections or colleagues on LinkedIn |
-| `volunteer_experience` | array | Contains information related to the user's volunteer work |
-| `followers` | number | How many users/ companies following the profile |
-| `connections` | number | How many connections the profile has |
-| `current_company_company_id` | text | The id of the latest/current company of the profile |
-| `current_company_name` | text | The name of the latest/current company of the profile |
-| `publications` | array | Published works or presentations |
-| `patents` | array | Patents filed or granted |
-| `projects` | array | Professional or academic projects |
-| `organizations` | array | Memberships in professional organizations |
-| `location` | text | Geographical location of the user |
-| `input_url` | url | Personal data. The URL that was entered when starting the scraping process |
-| `linkedin_id` | text | Personal data. LinkedIn profile identifier |
-| `activity` | array | Any activity the user has regarding posts |
-| `linkedin_num_id` | text | Numeric LinkedIn profile ID |
-| `banner_image` | url | Banner image |
-| `honors_and_awards` | array | Awards and recognitions received |
-| `similar_profiles` | array | Profiles similar to the current one |
-| `default_avatar` | boolean | Is the avatar picture the default avatar empty picture |
-| `memorialized_account` | boolean | Boolean indicating if the account is memorialized |
-| `bio_links` | array | External links added to the bio |
-| `first_name` | text | Personal data. First name of the user |
-| `last_name` | text | Personal data. Last name of the user |
-| `urn_id` | text | The Uniform Resource Name (URN) used by LinkedIn |
-| `urn` | text | Uniform Resource Name |
-| `influencer` | boolean | Indicator if the profile marked as influencer |
-| `fsd_profile_id` | text | FSD profile ID |
-| `backfilled_columns` | object | Indicates whether sticky columns were backfilled. Keys are column names and values are true/false. |
+| `id` | 文本 | 个人数据。此人领英个人资料的唯一标识符 |
+| `name` | 文本 | 个人数据。个人资料名称 |
+| `city` | 文本 | 用户的地理位置 |
+| `country_code` | 文本 | 用户地理位置对应的国家或地区代码 |
+| `position` | 文本 | 个人资料中显示的当前职位或职称 |
+| `about` | 文本 | 个人数据。简短的个人资料简介。网站有时只显示带有“…”的截断版本，此时采集到的也是该版本 |
+| `posts` | 数组 | 用户近期领英帖子的相关信息，通常包括帖子标题、创建日期、帖子 URL 等 |
+| `groups` | 数组 | 此人加入的领英群组 |
+| `current_company` | 对象 | 用户当前工作情况的信息，通常包括公司名称、职位、公司 ID 和所属行业 |
+| `experience` | 数组 | 用户的职业经历，通常包括职位、任职时长、公司所在地、起止日期、公司名称和公司资料页 URL 等 |
+| `url` | URL | 个人数据。直达领英个人资料的 URL |
+| `people_also_viewed` | 数组 | 浏览过此用户个人资料的人还浏览过的领英个人资料列表 |
+| `educations_details` | 文本 | 用户的教育背景信息 |
+| `education` | 数组 | 用户的教育背景，通常包括学位、起止年份、专业领域等 |
+| `recommendations_count` | 数字 | 用户收到的推荐总数 |
+| `avatar` | URL | 领英用户头像的 URL |
+| `courses` | 数组 | 用户修读的课程或教育项目 |
+| `languages` | 数组 | 用户掌握不同语言的情况 |
+| `certifications` | 数组 | 执照和认证 |
+| `recommendations` | 数组 | 用户在领英上收到的联系人或同事推荐 |
+| `volunteer_experience` | 数组 | 用户的志愿服务经历 |
+| `followers` | 数字 | 关注该个人资料的用户或公司数量 |
+| `connections` | 数字 | 此人的领英联系人数量 |
+| `current_company_company_id` | 文本 | 此人最近或当前所在公司的 ID |
+| `current_company_name` | 文本 | 此人最近或当前所在公司的名称 |
+| `publications` | 数组 | 已发表的作品或演讲 |
+| `patents` | 数组 | 已申请或已授权的专利 |
+| `projects` | 数组 | 职业或学术项目 |
+| `organizations` | 数组 | 加入的专业组织 |
+| `location` | 文本 | 用户的地理位置 |
+| `input_url` | URL | 个人数据。开始抓取时输入的 URL |
+| `linkedin_id` | 文本 | 个人数据。领英个人资料标识符 |
+| `activity` | 数组 | 用户与帖子相关的活动 |
+| `linkedin_num_id` | 文本 | 数字形式的领英个人资料 ID |
+| `banner_image` | URL | 横幅图片 |
+| `honors_and_awards` | 数组 | 获得的荣誉与奖项 |
+| `similar_profiles` | 数组 | 与当前个人资料类似的资料 |
+| `default_avatar` | 布尔值 | 头像是否为默认的空白头像 |
+| `memorialized_account` | 布尔值 | 账户是否已设为纪念账户 |
+| `bio_links` | 数组 | 添加到个人简介中的外部链接 |
+| `first_name` | 文本 | 个人数据。用户的名 |
+| `last_name` | 文本 | 个人数据。用户的姓 |
+| `urn_id` | 文本 | 领英使用的统一资源名称（URN）标识符 |
+| `urn` | 文本 | 统一资源名称 |
+| `influencer` | 布尔值 | 个人资料是否标记为有影响力人物 |
+| `fsd_profile_id` | 文本 | FSD 个人资料 ID |
+| `backfilled_columns` | 对象 | 标识固定字段是否经过回填。键为字段名，值为 `true` 或 `false` |
 
 </details>
 <!-- fields:end -->
 
 <details>
-<summary>The start of a real output file, from <code>linkedin-scraper satyanadella</code></summary>
+<summary>真实输出文件的开头，来自 <code>linkedin-scraper satyanadella</code></summary>
 
 ```json
 {
@@ -407,70 +344,58 @@ which the schema does not list.
   ...
 ```
 
-The whole file, one profile with every field, is
-[examples/sample_output.json](examples/sample_output.json).
+包含一份个人资料及其全部字段的完整文件见 [examples/sample_output.json](examples/sample_output.json)。
 
 </details>
 
-## When it fails
+## 出错时
 
-| you see | what it means |
+| 看到的信息 | 含义 |
 | --- | --- |
-| `API token required but not found.` | Exit 2, before any request. Set the token. |
-| `failed  slug: ...` | Exit 1. No such profile, usually a typo in the slug. |
-| `failed  slug: the API returned no row for this profile` | Exit 1. The job came back without a row for that input. Run it again. |
-| `failed  slug: Polling timed out after 605s for sd_...` | Exit 1. A request gives up after 600 seconds. A slow hour at the API does this. Run it again. |
+| `API token required but not found.` | 在发送任何请求之前以状态码 2 退出。请设置令牌。 |
+| `failed  slug: ...` | 以状态码 1 退出。个人资料不存在，通常是路径标识输入有误。 |
+| `failed  slug: the API returned no row for this profile` | 以状态码 1 退出。任务结果中没有该输入对应的数据行。请重新运行。 |
+| `failed  slug: Polling timed out after 605s for sd_...` | 以状态码 1 退出。请求在等待 600 秒后放弃。API 运行缓慢时可能出现这种情况；请重新运行。 |
 
-Any failure exits 1, so a run is safe to gate a script on.
+任何失败都会以状态码 1 退出，因此脚本可以安全地依据运行结果决定是否继续。
 
-From the SDK, the same conditions look like this:
+在 SDK 中，相同情况表现如下：
 
-| you see | what it means |
+| 看到的信息 | 含义 |
 | --- | --- |
-| `AuthenticationError: No API token found.` | No token anywhere: not in the options, the environment, or the CLI login. |
-| `APIError` with status 401 | The token is set but wrong. |
-| `result.success` is `false`, `result.status` is `"timeout"` | The SDK gave up waiting. Raise `pollTimeout`, in milliseconds, or run it again. |
-| a row in `result.data` with an `error` key | The API's answer for one input, when you asked for `includeErrors`. The other rows are fine. |
-| zero rows where you expected an error | You did not pass `includeErrors: true`, so the API dropped the row that would have explained it. |
+| `AuthenticationError: No API token found.` | 在选项、环境变量和 CLI 登录信息中都找不到令牌。 |
+| 状态码为 401 的 `APIError` | 已设置令牌，但令牌不正确。 |
+| `result.success` 为 `false`，`result.status` 为 `"timeout"` | SDK 等待超时。增大以毫秒为单位的 `pollTimeout`，或重新运行。 |
+| `result.data` 中某一行包含 `error` 键 | 这是启用 `includeErrors` 后 API 对某条输入返回的结果；其他行不受影响。 |
+| 原本预计会返回错误，却得到零行 | 没有传入 `includeErrors: true`，因此 API 丢弃了原本会说明错误原因的那一行。 |
 
-## Coding agents
+## 编程智能体
 
-No JavaScript, nothing installed. Paste both lines; the first opens a browser
-once, or use `bdata login --device` over SSH and in CI:
+无需编写 JavaScript，也无需预先安装任何内容。粘贴以下两行即可；第一行会打开一次浏览器。如果通过 SSH 或在 CI 中使用，请改用 `bdata login --device`：
 
 ```bash
 npx -p @brightdata/cli bdata login
 npx -p @brightdata/cli bdata pipelines linkedin_person_profile "https://www.linkedin.com/in/satyanadella/"
 ```
 
-`bdata pipelines list` prints every type. The LinkedIn ones are
-`linkedin_person_profile`, `linkedin_company_profile`, `linkedin_job_listings`,
-`linkedin_posts` and `linkedin_people_search`. Each takes URLs, prints JSON,
-and costs one credit per record.
+`bdata pipelines list` 会列出所有类型。领英相关类型包括 `linkedin_person_profile`、`linkedin_company_profile`、`linkedin_job_listings`、`linkedin_posts` 和 `linkedin_people_search`。它们接受 URL、输出 JSON，并按每条记录 1 个积分计费。
 
-`npx skills add brightdata/skills` teaches Claude Code, Cursor and Codex these
-commands and the docs, so plain language works afterwards. Full guide:
-[Bright Data for your coding agent](https://docs.brightdata.com/quickstart-coding-agent).
+运行 `npx skills add brightdata/skills`，可以让 Claude Code、Cursor 和 Codex 学会这些命令并了解相关文档，此后就能用自然语言提出需求。完整指南：[让编程智能体使用 Bright Data](https://docs.brightdata.com/quickstart-coding-agent)。
 
-No terminal, for a hosted assistant? The
-[Bright Data MCP server](https://github.com/brightdata/brightdata-mcp#which-tool-to-use)
-has LinkedIn tools in its `social` group, which is off unless you ask for it:
+使用托管助手、没有终端？[Bright Data MCP 服务器](https://github.com/bright-cn/brightdata-mcp#which-tool-to-use)的 `social` 工具组中包含领英工具；该工具组默认关闭，需要明确启用：
 
-    https://mcp.brightdata.com/mcp?token=YOUR_API_TOKEN&groups=social
+```text
+https://mcp.brightdata.com/mcp?token=YOUR_API_TOKEN&groups=social
+```
 
-An agent can also open the account itself, no signup form:
-[agent registration](https://brightdata.com/auth.md). Everything else Bright
-Data connects to, from LangChain to Zapier and n8n:
-[integrations](https://docs.brightdata.com/integrations/introduction).
+智能体还可以自行创建账户，无需填写注册表单：[智能体注册](https://www.bright.cn/auth.md)。如需了解 Bright Data 与 LangChain、Zapier、n8n 等工具的其他集成方式，请参阅[集成文档](https://docs.brightdata.com/integrations/introduction)。
 
-## Support
+## 支持
 
-Bugs in this repo:
-[open an issue](https://github.com/brightdata/linkedin-scraper-node/issues), and
-[CONTRIBUTING.md](CONTRIBUTING.md) says what to put in it.
-Anything about the API, your account or your credits:
-[Bright Data support](https://brightdata.zendesk.com/hc/en-us/requests/new).
+发现此仓库中的问题？请[提交 issue](https://github.com/bright-cn/linkedin-scraper-node/issues)，并参照 [CONTRIBUTING.md](CONTRIBUTING.md) 说明提供必要信息。
 
-## License
+有关 API、账户或积分的问题，请联系 [Bright Data 支持团队](https://brightdata.zendesk.com/hc/en-us/requests/new)。
 
-MIT.
+## 许可证
+
+MIT。
